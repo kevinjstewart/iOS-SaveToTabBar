@@ -4,4 +4,6 @@ Just a simple app that animates the current view and shrinks it down to the curr
 
 ### Video Demo
 
-https://thumbs.gfycat.com/FlakyGoodnaturedGrison-mobile.mp4
+https://thumbs.gfycat.com/DirectSomberGnatcatcher-mobile.mp4
+
+![screenshot of main screen](https://i.imgur.com/QnWzQw8.png)
