@@ -49,10 +49,12 @@ class ViewController: UIViewController {
   }
   
   private func performPageSnapshotAnimation() {
-    guard let tabBarController = tabBarController else { return }
-    guard let tabBarViewFrame = getSelectedTabBarItemFrame(from: tabBarController) else { return }
+    guard
+      let tabBarController = tabBarController,
+      let tabBarViewFrame = getSelectedTabBarItemFrame(from: tabBarController)
+    else { return }
     
-    // Capture snapshot of view inside safe area
+    // Capture snapshot of view inside safe area, wonder if there's a more intuitive way to do this ¯\_(ツ)_/¯
     let snapshotBounds = CGRect(
       x: view.bounds.origin.x,
       y: view.bounds.origin.y + view.safeAreaInsets.top,
@@ -74,20 +76,32 @@ class ViewController: UIViewController {
     let terminalHeight = 60.0
     let terminalWidth = terminalHeight * snapshotAspectRatio
     
-    UIView.animate(withDuration: 0.5, delay: 0.0, options: [.curveEaseInOut], animations: {
-      snapshot.frame = CGRect(
-        x: tabBarViewFrame.origin.x + (tabBarViewFrame.width / 2.0) - (terminalWidth / 2.0),
-        y: tabBarController.view.bounds.maxY - tabBarViewFrame.height,
-        width: terminalWidth,
-        height: terminalHeight
-      )
-    }, completion: { _ in
-      UIView.animate(withDuration: 0.1) {
-        snapshot.alpha = 0.0
-      } completion: { _ in
-        snapshot.removeFromSuperview()
+    UIView.animateKeyframes(withDuration: 1.0, delay: 0.0, options: [.calculationModeCubic]) {
+      UIView.addKeyframe(withRelativeStartTime: 0.0, relativeDuration: 0.6) {
+        // Shrink to center of snapshot view's bounds
+        snapshot.frame = CGRect(
+          x: (snapshotBounds.width / 2.0) - (terminalWidth / 2.0),
+          y: (snapshotBounds.height + self.view.safeAreaInsets.top) / 2.0,
+          width: terminalWidth * 1.2, // Slightly larger than terminal size
+          height: terminalHeight * 1.2
+        )
       }
-    })
+      UIView.addKeyframe(withRelativeStartTime: 0.6, relativeDuration: 0.4) {
+        // Then move to tab bar
+        snapshot.frame = CGRect(
+          x: tabBarViewFrame.origin.x + (tabBarViewFrame.width / 2.0) - (terminalWidth / 2.0),
+          y: tabBarController.view.bounds.maxY - tabBarViewFrame.height,
+          width: terminalWidth,
+          height: terminalHeight
+        )
+      }
+      // And fade out near the end
+      UIView.addKeyframe(withRelativeStartTime: 0.8, relativeDuration: 0.2) {
+        snapshot.alpha = 0.0
+      }
+    } completion: { _ in
+      snapshot.removeFromSuperview()
+    }
   }
   
   private func getSelectedTabBarItemFrame(from tabBarController: UITabBarController) -> CGRect? {
